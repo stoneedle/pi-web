@@ -139,7 +139,8 @@ keys, so `e2e/lib/stub-pi/pi` answers the line-delimited JSON protocol:
 - `get_state` / `set_model` / `set_thinking_level` / `abort` → acknowledge.
 - `prompt` → acks, then appends a user turn + a deterministic
   `Stub reply: <prompt>` assistant turn to the session JSONL (like real pi owns
-  the file) and emits `message_update` / `message_end` / `turn_end` / `agent_end`.
+  the file) and emits `agent_start`, then `message_update` / `message_end` /
+  `turn_end` / `agent_end`, followed by `agent_settled`.
 
 The browser surfaces the reply through the same fsnotify → SSE reload path as a
 real session. To extend chat coverage, add command handling in the stub mirroring

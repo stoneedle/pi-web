@@ -7,7 +7,7 @@
 //   - switch_session: remember the session file path.
 //   - get_state / set_model / set_thinking_level / abort: acknowledge.
 //   - prompt: ack, then append a user turn + a deterministic assistant reply to
-//     the session JSONL (like real pi owns the file) and emit stream + agent_end
+//     the session JSONL (like real pi owns the file) and emit stream + run lifecycle
 //     events. The browser picks up the reply via the fsnotify->SSE reload path.
 
 import fs from "node:fs";
@@ -71,7 +71,7 @@ function messageEntry(role, text, parentId) {
 }
 
 // A "[[slow:NNNN]]" marker in a prompt keeps the worker in the running state for
-// NNNN ms before emitting agent_end, giving steer/queue e2e tests a window to
+// NNNN ms before settling, giving steer/queue e2e tests a window to
 // interact while a response is in flight. The marker is stripped from the text
 // written to the session.
 let activeSlowRun = false;
@@ -99,12 +99,14 @@ function handlePrompt(cmd) {
 
   // A prompt that lands while a slow run is in flight is a steer: real pi folds
   // it into the active turn rather than starting a new one, so write the turn
-  // but let the original run own the agent_end / completion signal.
+  // but let the original run own the agent_settled / completion signal.
   if (activeSlowRun) {
     writeTurn(userText, reply);
     send({ type: "message_update", assistantMessageEvent: { type: "text_delta", text: reply } });
     return;
   }
+
+  send({ type: "agent_start" });
 
   if (delay > 0) {
     activeSlowRun = true;
@@ -115,6 +117,7 @@ function handlePrompt(cmd) {
       send({ type: "turn_end" });
       send({ type: "agent_end" });
       activeSlowRun = false;
+      send({ type: "agent_settled" });
     }, delay);
     return;
   }
@@ -127,6 +130,7 @@ function handlePrompt(cmd) {
     send({ type: "message_end" });
     send({ type: "turn_end" });
     send({ type: "agent_end" });
+    send({ type: "agent_settled" });
   }, 30);
 }
 
@@ -150,6 +154,7 @@ function handle(cmd) {
     case "abort":
       respond(cmd.id, "abort", {});
       send({ type: "agent_end" });
+      send({ type: "agent_settled" });
       break;
     case "get_commands":
       respond(cmd.id, "get_commands", { commands: COMMANDS });

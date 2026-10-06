@@ -251,11 +251,17 @@ type piRPCWorker struct {
     commands             []workers.SlashCommand // cached get_commands result
     commandsCached       bool
     lastActive           atomic.Int64 // unix nanos; user-initiated actions
-    lastStreamActivity   atomic.Int64 // unix nanos; stream events keep worker visually running
     streamSink           StreamEventSink
     streamPreview        *streamPreviewAccumulator
 }
 ```
+
+Worker run state follows Pi's RPC lifecycle (`agent_start` → `running`,
+`agent_settled` → `idle`), requiring Pi 0.80.5 or newer. `agent_end` is a
+low-level boundary and does not release the worker for idle reaping or queued
+chat dispatch. Stream activity controls previews, not run state. Model and
+abort acknowledgements do not settle runs; late lifecycle events do not clear
+process errors.
 
 ## HTTP Handler Map
 

@@ -70,7 +70,7 @@ This flow covers a user typing a message (with optional image attachment) in the
      │             │              │                  │                  │               │    matches response by id
      │             │              │                  │                  │               │
      │             │              │                  │                  │               │─── Response arrives
-     │             │              │                  │                  │               │─── status → idle
+     │             │              │                  │                  │               │─── prompt accepted
      │             │              │                  │                  │               │
      │             │              │                  │                  │◀────────────── nil
      │             │              │                  │                  │               │
@@ -91,7 +91,7 @@ This flow covers a user typing a message (with optional image attachment) in the
      │             │              │                  │                  │               │
      │             │              │                  │                  │               │
      │  [Later]    │              │                  │                  │               │
-     │  SSE: agent_end
+     │  SSE: session-file reload
      │◀──────────── event: reload ──────────────────────────────────────────────────────│
      │             │              │                  │                  │               │
      │  (browser reconciles from `/api/session`; interim assistant text may have appeared earlier via `chat-preview` SSE)
@@ -180,21 +180,29 @@ The `consume()` goroutine reads JSONL lines from `pi`'s stdout:
 {"type":"response","id":"req-1","success":true}
 ```
 
-It matches by `id` and delivers to the waiting `pending` channel. The worker then updates its status to `idle`.
+It matches by `id` and delivers to the waiting `pending` channel. This acknowledges prompt acceptance; the worker stays `running` until Pi emits `agent_settled`.
 
 ### 6. Streaming Events
 
 While the AI is generating, `pi` may emit stream events:
 
 ```
-{"type":"message_update", …}
+{"type":"agent_start"}
 {"type":"message_update", …}
 {"type":"message_end"}
 {"type":"turn_end"}
-{"type":"agent_end"}
+{"type":"agent_end","willRetry":true}
+{"type":"auto_retry_start", …}
+{"type":"agent_start"}
+…
+{"type":"agent_end","willRetry":false}
+{"type":"agent_settled"}
 ```
 
-These update `lastStreamActivity` so `Status()` continues to report `running` until the stream completes.
+`agent_start` marks the worker `running`; only `agent_settled` marks it `idle`.
+`agent_end` finishes a low-level run, but retries, compaction recovery, and queued
+continuations can still follow. Stream updates feed the preview without deciding
+worker liveness, so backoff and silent tools remain protected from idle reaping.
 
 ### 7. Error Handling
 
@@ -209,7 +217,10 @@ These update `lastStreamActivity` so `Status()` continues to report `running` un
 
 ### 8. Worker Lifecycle
 
-After 10 minutes of idle time (no user-initiated actions), the reaper goroutine closes idle workers to free resources.
+Every two minutes, the reaper closes workers that report `idle` and whose last
+user-initiated action was at least ten minutes ago. A long run can therefore be
+reaped soon after `agent_settled`, but not during retry, compaction, or silent
+tool work. Model and abort acknowledgements do not settle a run.
 
 ### 9. Cancelling a Chat
 
