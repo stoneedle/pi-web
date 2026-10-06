@@ -74,7 +74,7 @@ function messageEntry(role, text, parentId) {
 // NNNN ms before settling, giving steer/queue e2e tests a window to
 // interact while a response is in flight. The marker is stripped from the text
 // written to the session.
-let activeSlowRun = false;
+let activeRunTimer = null;
 
 function parseDelay(raw) {
   const m = /\s*\[\[slow:(\d+)\]\]\s*/.exec(raw);
@@ -97,10 +97,10 @@ function handlePrompt(cmd) {
   const { text: userText, delay } = parseDelay(raw);
   const reply = `Stub reply: ${userText}`;
 
-  // A prompt that lands while a slow run is in flight is a steer: real pi folds
+  // A prompt that lands while a run is in flight is a steer: real pi folds
   // it into the active turn rather than starting a new one, so write the turn
   // but let the original run own the agent_settled / completion signal.
-  if (activeSlowRun) {
+  if (activeRunTimer !== null) {
     writeTurn(userText, reply);
     send({ type: "message_update", assistantMessageEvent: { type: "text_delta", text: reply } });
     return;
@@ -109,27 +109,27 @@ function handlePrompt(cmd) {
   send({ type: "agent_start" });
 
   if (delay > 0) {
-    activeSlowRun = true;
     send({ type: "message_update", assistantMessageEvent: { type: "text_delta", text: "working…" } });
-    setTimeout(() => {
+    activeRunTimer = setTimeout(() => {
       writeTurn(userText, reply);
       send({ type: "message_end" });
       send({ type: "turn_end" });
       send({ type: "agent_end" });
-      activeSlowRun = false;
+      activeRunTimer = null;
       send({ type: "agent_settled" });
     }, delay);
     return;
   }
 
   // Mimic real pi taking ownership of the session file.
-  setTimeout(() => {
+  activeRunTimer = setTimeout(() => {
     writeTurn(userText, reply);
     // Best-effort stream signals; shape mismatch is harmless to the worker.
     send({ type: "message_update", assistantMessageEvent: { type: "text_delta", text: reply } });
     send({ type: "message_end" });
     send({ type: "turn_end" });
     send({ type: "agent_end" });
+    activeRunTimer = null;
     send({ type: "agent_settled" });
   }, 30);
 }
@@ -152,9 +152,13 @@ function handle(cmd) {
       respond(cmd.id, "set_thinking_level", { thinkingLevel });
       break;
     case "abort":
+      if (activeRunTimer !== null) {
+        clearTimeout(activeRunTimer);
+        activeRunTimer = null;
+        send({ type: "agent_end" });
+        send({ type: "agent_settled" });
+      }
       respond(cmd.id, "abort", {});
-      send({ type: "agent_end" });
-      send({ type: "agent_settled" });
       break;
     case "get_commands":
       respond(cmd.id, "get_commands", { commands: COMMANDS });

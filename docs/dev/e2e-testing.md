@@ -142,6 +142,9 @@ keys, so `e2e/lib/stub-pi/pi` answers the line-delimited JSON protocol:
   the file) and emits `agent_start`, then `message_update` / `message_end` /
   `turn_end` / `agent_end`, followed by `agent_settled`.
 
+Steers share the active run's settlement. Aborting cancels the pending reply
+before settlement, so no delayed file writes or stream events outlive the run.
+
 The browser surfaces the reply through the same fsnotify → SSE reload path as a
 real session. To extend chat coverage, add command handling in the stub mirroring
 the real protocol in `internal/rpc/client.go`.
