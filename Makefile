@@ -13,7 +13,7 @@ ROOT_NODE_MODULES := node_modules
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
 build: setup frontend-build
-	go build -ldflags="-s -w -X main.version=$(VERSION)" -o $(BINARY) ./cmd/pi-web
+	go build -ldflags="-s -w -X main.version=$(VERSION)" -o "$(BINARY)" ./cmd/pi-web
 
 setup: frontend-setup go-setup
 
