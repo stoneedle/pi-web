@@ -55,12 +55,10 @@ function Stop-PiWeb {
 
 function Install-Binary($src, $tag) {
   New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-  # A running executable cannot be overwritten on Windows, but it can be
-  # renamed: move the old binary aside, move the new one into place, then try
-  # to delete the leftover (harmlessly fails while the old process still runs;
-  # the next install removes it).
-  $old = "$Binary.old"
-  Remove-Item $old -Force -ErrorAction SilentlyContinue
+  # Retired images remain locked until their process exits. Give each swap its
+  # own path so another source update can complete while an older image runs.
+  Get-ChildItem -Path "$Binary.old*" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+  $old = "$Binary.old.$([guid]::NewGuid().ToString('N'))"
   if (Test-Path $Binary) { Move-Item $Binary $old -Force }
   Copy-Item $src $Binary -Force
   Remove-Item $old -Force -ErrorAction SilentlyContinue
