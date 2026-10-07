@@ -18,7 +18,7 @@
   let { title = 'Session', cwd = '', sessionId = '', sessionUUID = '' } = $props();
 
   // The title prop seeds the shared store (and re-seeds it on session switch);
-  // renames/auto-titling update the store, which this component renders and
+  // committed native names update the store, which this component renders and
   // mirrors into document.title.
   $effect(() => setSessionTitle(title));
   $effect(() => {

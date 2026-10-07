@@ -172,10 +172,10 @@
           const next = window.prompt(t('menu.renamePrompt'), current);
           const trimmed = next ? next.trim() : '';
           closeMenu();
-          if (!trimmed || trimmed === current) break;
+          if (!trimmed) break;
           renameSession(sessionId, trimmed)
             .then((data) => {
-              setSessionTitle((data && data.name) || trimmed);
+              setSessionTitle(data.name);
               toast(t('menu.renamed'));
             })
             .catch(() => toast(t('git.renameFailed')));
