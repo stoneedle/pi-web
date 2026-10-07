@@ -8,7 +8,6 @@
   import NotificationSettings from '../components/settings/NotificationSettings.svelte';
   import SessionDisplayDefaultsSettings from '../components/settings/SessionDisplayDefaultsSettings.svelte';
   import SessionsListSettings from '../components/settings/SessionsListSettings.svelte';
-  import SessionTitleSettings from '../components/settings/SessionTitleSettings.svelte';
   import { t } from '../shared/i18n.js';
   import { navigate } from '../shared/navigation.js';
   import { loadSettings, persistSetting } from '../settings/settings-support.js';
@@ -23,7 +22,6 @@
     { id: 'appearance', labelKey: 'settings.appearance' },
     { id: 'language', labelKey: 'settings.language' },
     { id: 'sessionsList', labelKey: 'settings.sessionsList' },
-    { id: 'sessionTitles', labelKey: 'settings.sessionTitles' },
     { id: 'sessionDisplay', labelKey: 'settings.sessionDisplay' },
     { id: 'artifacts', labelKey: 'settings.artifacts' },
     { id: 'notifications', labelKey: 'settings.notifications' },
@@ -196,8 +194,6 @@
       <LanguageSettings {settings} onSave={saveSetting} />
     {:else if activeSection === 'sessionsList'}
       <SessionsListSettings {settings} onSave={saveSetting} />
-    {:else if activeSection === 'sessionTitles'}
-      <SessionTitleSettings {settings} onSave={saveSetting} />
     {:else if activeSection === 'sessionDisplay'}
       <SessionDisplayDefaultsSettings {settings} onSave={saveSetting} />
     {:else if activeSection === 'artifacts'}

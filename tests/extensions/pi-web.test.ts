@@ -48,7 +48,6 @@ import {
   withToken,
   readPiWebToken,
   writePiWebToken,
-  cleanupPiWebNpmTemps,
 } from '../../.pi/extensions/pi-web.ts';
 
 declare global {
@@ -149,27 +148,6 @@ describe('normalizeCommandArgs', () => {
   it('set-token destructure: token with special chars', () => {
     const [, token] = normalizeCommandArgs('set-token sec=ret&val');
     expect(token).toBe('sec=ret&val');
-  });
-});
-
-// ── npm cleanup ────────────────────────────────────────────────────
-describe('cleanupPiWebNpmTemps', () => {
-  it('removes stale pi-web npm temp dirs only', () => {
-    const root = `${process.cwd()}/.tmp-test-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const scope = `${root}/npm/node_modules/@ygncode`;
-    const stale = `${scope}/.pi-web-F7YwHA7A`;
-    const keep = `${scope}/pi-web`;
-    mkdirSync(`${stale}/nested`, { recursive: true });
-    mkdirSync(keep, { recursive: true });
-    writeFileSync(`${stale}/nested/file`, 'x');
-
-    try {
-      expect(cleanupPiWebNpmTemps(root)).toBe(1);
-      expect(existsSync(stale)).toBe(false);
-      expect(existsSync(keep)).toBe(true);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
   });
 });
 

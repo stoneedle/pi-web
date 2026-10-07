@@ -245,18 +245,6 @@ export default {
   'settings.showBtwHint':
     'Sertakan obrolan coretan btw sekali pakai dalam daftar sesi. Disembunyikan secara bawaan.',
 
-  'settings.sessionTitles': 'Judul Sesi',
-  'settings.autoTitle': 'Buat judul otomatis',
-  'settings.autoTitleHint': 'Biarkan pi-web menamai sesi secara otomatis dari pesan pertama.',
-  'settings.whenToTitle': 'Kapan memberi judul',
-  'settings.whenToTitleHint': 'Beri judul sesi sekali, atau perbarui saat fokus berubah.',
-  'settings.titleOnce': 'Sekali per sesi',
-  'settings.titleEachTurn': 'Setiap pesan baru',
-  'settings.titleModel': 'Model judul',
-  'settings.titleModelHint':
-    'Bawaan adalah heuristik kata gratis dan instan (tanpa AI). Pilih model untuk judul yang lebih cerdas — yang kecil dan cepat ideal.',
-  'settings.titleBuiltin': 'Heuristik bawaan (tanpa AI)',
-
   'settings.sessionDisplay': 'Tampilan sesi',
   'settings.thinkingExpanded': 'Tampilkan berpikir secara bawaan',
   'settings.thinkingExpandedHint':

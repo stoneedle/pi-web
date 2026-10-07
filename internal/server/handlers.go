@@ -400,7 +400,8 @@ func (s *Server) handleRenameSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := sessions.RenameSession(resolved.Path, name, s.now); err != nil {
+	name, err = s.renameSession(r.Context(), resolved, name)
+	if err != nil {
 		if errors.Is(err, sessions.ErrEmptySessionName) {
 			writeJSONError(w, http.StatusBadRequest, "name is required")
 			return

@@ -1,7 +1,6 @@
 // Package updater checks whether a newer pi-web release is available. It
-// compares the build-time version against the npm registry's published
-// version (the install channel) and fetches the matching changelog from the
-// GitHub Releases API. Results are cached in memory and refreshed by a
+// compares the build-time version with releases of the source fork and reads
+// their changelog from the GitHub Releases API. Results are cached in memory and refreshed by a
 // background poll; callers can also force an immediate check.
 package updater
 
@@ -20,10 +19,7 @@ import (
 )
 
 const (
-	defaultNPMURL    = "https://registry.npmjs.org/@ygncode/pi-web"
-	defaultGitHubAPI = "https://api.github.com/repos/ygncode/pi-web"
-	// npmChannel is the dist-tag pi-web installs from (see pi install command).
-	npmChannel = "beta"
+	defaultGitHubAPI = "https://api.github.com/repos/stoneedle/pi-web"
 	// PollInterval is how often the background goroutine refreshes the cache.
 	PollInterval = 6 * time.Hour
 	httpTimeout  = 10 * time.Second
@@ -40,16 +36,14 @@ type Info struct {
 	CheckedAt    string `json:"checkedAt"`
 }
 
-// devVersionRe matches `git describe` development builds: a tag followed by a
-// commits-ahead count and an abbreviated SHA (e.g. "-3-gd7e8bf2"), optionally
-// "-dirty". Clean release builds are exactly the tag and don't match.
-var devVersionRe = regexp.MustCompile(`-\d+-g[0-9a-f]{7,}|-dirty$`)
+// git describe returns a bare SHA when no tag is reachable, otherwise a tag
+// plus commits-ahead and SHA. Neither source build is a published release.
+var devVersionRe = regexp.MustCompile(`^[0-9a-f]{7,40}$|-\d+-g[0-9a-f]{7,}|-dirty$`)
 
 // Checker holds the current version and the cached result of the last remote
 // check. It is safe for concurrent use.
 type Checker struct {
 	current   string
-	npmURL    string
 	githubAPI string
 	client    *http.Client
 
@@ -68,7 +62,6 @@ func New(version string) *Checker {
 	}
 	return &Checker{
 		current:   version,
-		npmURL:    defaultNPMURL,
 		githubAPI: defaultGitHubAPI,
 		client:    &http.Client{Timeout: httpTimeout},
 	}
@@ -118,14 +111,17 @@ func (c *Checker) Check(ctx context.Context) (Info, error) {
 		return info, nil
 	}
 
-	latest, err := c.fetchLatestVersion(ctx)
+	release, err := c.fetchRelease(ctx, c.githubAPI+"/releases/latest")
 	if err != nil {
 		return c.Info(), err
 	}
-
+	latest := strings.TrimPrefix(release.TagName, "v")
+	if latest == "" {
+		return c.Info(), fmt.Errorf("fork release has no tag")
+	}
 	var changelog, changelogURL string
 	if compareSemver(latest, c.current) > 0 {
-		changelog, changelogURL = c.fetchChangelog(ctx, latest)
+		changelog, changelogURL = release.Body, release.HTMLURL
 	}
 
 	c.mu.Lock()
@@ -162,43 +158,8 @@ func (c *Checker) Start(ctx context.Context) {
 	}
 }
 
-// fetchLatestVersion reads the published version for the install channel from
-// the npm registry packument (dist-tags), falling back to "latest".
-func (c *Checker) fetchLatestVersion(ctx context.Context) (string, error) {
-	body, err := c.get(ctx, c.npmURL, "")
-	if err != nil {
-		return "", err
-	}
-	var doc struct {
-		DistTags map[string]string `json:"dist-tags"`
-	}
-	if err := json.Unmarshal(body, &doc); err != nil {
-		return "", fmt.Errorf("parse npm packument: %w", err)
-	}
-	if v := doc.DistTags[npmChannel]; v != "" {
-		return v, nil
-	}
-	if v := doc.DistTags["latest"]; v != "" {
-		return v, nil
-	}
-	return "", fmt.Errorf("no published version found for @ygncode/pi-web")
-}
-
-// fetchChangelog tries the version-specific GitHub release first, then the
-// generic "latest release". Failures are non-fatal — an empty changelog just
-// means the UI shows the update without release notes.
-func (c *Checker) fetchChangelog(ctx context.Context, version string) (body, url string) {
-	tag := "v" + strings.TrimPrefix(version, "v")
-	if rel, err := c.fetchRelease(ctx, c.githubAPI+"/releases/tags/"+tag); err == nil {
-		return rel.Body, rel.HTMLURL
-	}
-	if rel, err := c.fetchRelease(ctx, c.githubAPI+"/releases/latest"); err == nil {
-		return rel.Body, rel.HTMLURL
-	}
-	return "", ""
-}
-
 type githubRelease struct {
+	TagName string `json:"tag_name"`
 	Body    string `json:"body"`
 	HTMLURL string `json:"html_url"`
 }

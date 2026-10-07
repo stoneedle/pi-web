@@ -10,7 +10,6 @@ export default defineConfig({
   workers: isCI ? 2 : undefined,
   reporter: isCI ? [["html", { open: "never" }], ["list"]] : [["list"]],
   globalSetup: "./global-setup.ts",
-  globalTeardown: "./global-teardown.ts",
   use: {
     trace: "on-first-retry",
     // baseURL is injected per-test by the fixture in lib/test.ts from the

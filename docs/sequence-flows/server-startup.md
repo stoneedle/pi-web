@@ -181,7 +181,7 @@ The regular state file remains the discovery target for the pi extension.
 `make dev` sets the internal `PI_WEB_DEV=1` environment and uses its own state
 file and lock, allowing the source checkout to share sessions and SQLite data
 with the installed server on another port. Development mode disables
-autonomous scheduling, queue draining, auto-titling, and push delivery to avoid
+autonomous scheduling, queue draining, and push delivery to avoid
 duplicate side effects. State files contain the development marker, PID, port,
 host, Tailscale Serve flag/URL, and start time, and are cleaned up on graceful
 shutdown. The regular path still migrates the old

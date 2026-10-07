@@ -248,20 +248,6 @@ export default {
   'settings.showBtwHint':
     'Isama ang mga pang-isang-gamit na btw scratch-chat sa listahan ng session. Nakatago bilang default.',
 
-  'settings.sessionTitles': 'Mga Pamagat ng Session',
-  'settings.autoTitle': 'Awtomatikong gumawa ng pamagat',
-  'settings.autoTitleHint':
-    'Hayaan ang pi-web na awtomatikong pangalanan ang mga session mula sa unang mensahe.',
-  'settings.whenToTitle': 'Kailan magbibigay ng pamagat',
-  'settings.whenToTitleHint':
-    'Bigyan ng pamagat ang session nang isang beses, o i-refresh habang lumilipat ang pokus.',
-  'settings.titleOnce': 'Isang beses bawat session',
-  'settings.titleEachTurn': 'Bawat bagong mensahe',
-  'settings.titleModel': 'Model ng pamagat',
-  'settings.titleModelHint':
-    'Ang built-in ay libre, instant na heuristic ng salita (walang AI). Pumili ng model para sa mas matalinong pamagat — mainam ang maliit at mabilis.',
-  'settings.titleBuiltin': 'Built-in na heuristic (walang AI)',
-
   'settings.sessionDisplay': 'Display ng session',
   'settings.thinkingExpanded': 'Ipakita ang thinking bilang default',
   'settings.thinkingExpandedHint':

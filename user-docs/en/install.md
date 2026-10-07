@@ -24,115 +24,32 @@
 
 ## Requirements
 
-- [Go](https://go.dev) 1.25+ (only for building from source)
-- `pi` on your `PATH` for browser chat/model switching
-- Optional: `gh` for sharing
-- On Windows: pi needs a bash shell for its shell tool — [Git for Windows](https://git-scm.com/download/win) is enough (see pi's Windows docs)
+- Pi 1.0.4, Node.js 22.19+, Go 1.26+, Git and GNU Make
+- Git Bash on Windows; set `MAKE` to the GNU Make executable if it is outside `PATH`
+- Optional: `gh` for sharing and Tailscale for remote access
 
-## Install
-
-### Pi package (recommended)
+## Install the source fork
 
 ```bash
-pi install npm:@ygncode/pi-web@beta
+pi install git:github.com/stoneedle/pi-title-glyphs
+pi install git:github.com/stoneedle/pi-web
 ```
 
-This single command:
-- Installs the npm pi package under pi's package directory
-- Runs the package `postinstall` script (`install.sh`, or `install.ps1` on Windows)
-- Downloads the matching pi-web binary for your package version and platform from GitHub Releases
-- Installs it to `~/.pi/agent/bin/pi-web` (`pi-web.exe` on Windows)
-- Sets up auto-start on login (launchd on macOS, systemd on Linux, a Run-key launcher on Windows)
-- Registers the `/web`, `/remote`, `/refresh`, `/pi-web token`, and `/pi-web set-token` pi commands
+The web package builds its frontend and Go binary from the same fork checkout, then installs the binary and CLI into `~/.pi/agent/bin/`. Its platform installer sets up login startup. The title plugin's README describes the exact Pi 1.0.4 host title repair; apply it and restart Pi. Ordinary extension updates can use `/reload`.
 
-Session auto-titling is built into pi-web (not the extension) and configured on the `/settings` page. It's on by default: pi-web names sessions automatically using a free built-in word heuristic (no AI), re-titling on every new message. You can switch to titling once per session, and/or pick a model to write smarter titles instead of the heuristic.
+Names come from the title plugin: the first opening text is saved immediately, and an optional background model summary may replace it once. Configure `{ "model": "openai-codex/gpt-6-luna" }` in `<agent-dir>/extension-data/pi-title-glyphs/config.json` to enable that summary. pi-web reads native names and supplies manual renaming. Manual names persist through reopen and defeat pending summaries. Existing named sessions keep their names.
 
-On Linux, auto-start is configured as a user systemd service at `~/.config/systemd/user/pi-web.service`. The installer rewrites its `ExecStart` to the actual installed binary path. If Tailscale is available at runtime, pi-web publishes the localhost server with Tailscale Serve HTTPS. If user systemd is unavailable, run it manually with `~/.pi/agent/bin/pi-web -o`.
-
-To install only for a specific project (shared with your team via `.pi/settings.json`):
+For a local development checkout:
 
 ```bash
-pi install -l npm:@ygncode/pi-web@beta
-```
-
-Then restart pi (or run `/reload`), and use `/web`, `/pi-web`, `/remote`, `/refresh`. Manage your access token with `/pi-web token` and `/pi-web set-token`.
-
-If npm aborts with `ENOTEMPTY` while renaming `@ygncode/pi-web`, remove npm's stale hidden backup directories and reinstall the beta channel:
-
-```bash
-rm -rf ~/.pi/agent/npm/node_modules/@ygncode/.pi-web-*
-pi install npm:@ygncode/pi-web@beta
-```
-
-### Quick install (no build tools needed)
-
-macOS / Linux:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/ygncode/pi-web/main/install.sh | bash
-```
-
-Windows (PowerShell):
-
-```powershell
-irm https://raw.githubusercontent.com/ygncode/pi-web/main/install.ps1 | iex
-```
-
-This downloads the latest pi-web binary, installs it to `/usr/local/bin` (`~/.pi/agent/bin` on Windows), and sets up auto-start on login. No Go, Node, or pi required.
-
-### Download binary
-
-Pre-built binaries are attached to each [GitHub Release](https://github.com/ygncode/pi-web/releases).
-
-```bash
-# macOS (Apple Silicon)
-curl -L -o pi-web https://github.com/ygncode/pi-web/releases/latest/download/pi-web-darwin-arm64
-chmod +x pi-web
-
-# macOS (Intel)
-curl -L -o pi-web https://github.com/ygncode/pi-web/releases/latest/download/pi-web-darwin-amd64
-chmod +x pi-web
-
-# Linux (amd64)
-curl -L -o pi-web https://github.com/ygncode/pi-web/releases/latest/download/pi-web-linux-amd64
-chmod +x pi-web
-
-# Linux (arm64)
-curl -L -o pi-web https://github.com/ygncode/pi-web/releases/latest/download/pi-web-linux-arm64
-chmod +x pi-web
-```
-
-```powershell
-# Windows (x64)
-irm -OutFile pi-web.exe https://github.com/ygncode/pi-web/releases/latest/download/pi-web-windows-amd64.exe
-
-# Windows (ARM64)
-irm -OutFile pi-web.exe https://github.com/ygncode/pi-web/releases/latest/download/pi-web-windows-arm64.exe
-```
-
-Then move it to your PATH:
-
-```bash
-cp pi-web ~/.pi/agent/bin/
-# or system-wide:
-sudo cp pi-web /usr/local/bin/
-```
-
-### Build from source
-
-```bash
-git clone https://github.com/ygncode/pi-web.git
+git clone https://github.com/stoneedle/pi-web.git
 cd pi-web
-make build   # builds the Vite bundle, then embeds it into the Go binary
-
-# optional: put it on PATH
-cp pi-web ~/.pi/agent/bin/
+make build
+pi install .
+node scripts/run-lifecycle.mjs install
 ```
 
-The frontend bundle is embedded by `web/assets_embed.go`, so `go build` needs
-`web/dist` to exist first. `make build` does both steps in order; if you build
-by hand, run `npm --prefix web install && npm --prefix web run build` before
-`go build ./cmd/pi-web`.
+On Windows use `make build BINARY=pi-web.exe`. The lifecycle installer also builds before installing. In-app updates target this source fork, and Git development builds retain the existing development-version update guard. Keep the build toolchain available to the update process.
 
 ### Develop alongside an installed instance
 
@@ -150,7 +67,7 @@ runtime lock and state file. Regular installed and manually launched instances
 are unchanged and retain the original single-instance behavior.
 
 To prevent duplicate autonomous work, development mode does not run the
-schedule loop, chat-queue drainer, auto-titling, or push notifications. Direct
+schedule loop, chat-queue drainer, or push notifications. Direct
 requests made through the development UI still work. Do not drive the same
 chat session from both instances at once; each process has its own RPC worker
 manager.

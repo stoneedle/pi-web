@@ -293,8 +293,8 @@ class TestNotesAndSettings(unittest.TestCase):
         self.assertIn("unknown setting", str(ctx.exception))
 
     def test_bool_coerce(self):
-        self.assertEqual(pi_web.coerce_setting_value("pi-web:v1:auto-title:enabled", "off"), "false")
-        self.assertEqual(pi_web.coerce_setting_value("pi-web:v1:auto-title:enabled", "on"), "true")
+        self.assertEqual(pi_web.coerce_setting_value("pi-web:v1:cat:enabled", "off"), "false")
+        self.assertEqual(pi_web.coerce_setting_value("pi-web:v1:cat:enabled", "on"), "true")
         self.assertEqual(pi_web.coerce_setting_value("pi-web-theme", "nord"), "nord")
 
     def test_notes_append_posts_mode(self):

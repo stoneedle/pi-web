@@ -14,7 +14,7 @@ pi-web is a local HTTP server that lets you browse and interact with your pi cod
 | Styling | Custom CSS (multi-theme: dark/light/nord/dracula/custom) |
 | Live Updates | Server-Sent Events (SSE) |
 | Chat RPC | JSONL over stdin/stdout via `pi --mode rpc` |
-| Session Storage | JSONL files on disk; pi-web creates new session files and only appends metadata (`session_info` for rename/auto-title, `label` for entry labels) |
+| Session Storage | JSONL files on disk; pi-web creates new session files and only appends metadata (native `session_info` for inactive rename; active rename goes to the Pi title owner, `label` for entry labels) |
 | Local DB | SQLite (`~/.pi/agent/pi-web.sqlite`) for per-project scratchpads, per-session review annotations, project visibility prefs, server-backed user settings, the btw scratch-chat registry, schedules + run history, the chat queue, and diff review comments |
 | Auth | Token cookie/query/header (optional on localhost) |
 
@@ -193,7 +193,7 @@ across devices. See `internal/server/projects.go`.
 13. Start `http.Server` with timeouts; graceful shutdown on `SIGINT`/`SIGTERM`
 
 The internal development mode shares session files and SQLite data but disables
-the autonomous scheduler, chat-queue drainer, auto-titler, and push delivery.
+the autonomous scheduler, chat-queue drainer and push delivery.
 This allows `make dev` to run on port `31416` beside the installed server on
 `31415` without duplicating background side effects. Regular release behavior
 and its single-instance lock remain unchanged, and its state file stays

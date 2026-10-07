@@ -1,11 +1,12 @@
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import { BINARY, FIXTURES_SESSIONS, REPO_ROOT, TMP_DIR } from "./paths";
 
 /** Directory holding the stub `pi` binary, prepended to PATH so chat works without real pi. */
 const STUB_PI_DIR = join(REPO_ROOT, "e2e", "lib", "stub-pi");
+const STUB_BIN_DIR = process.platform === "win32" ? join(TMP_DIR, "stub-pi") : STUB_PI_DIR;
 
 export async function findFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -78,7 +79,9 @@ export async function startServer(): Promise<StartedServer> {
       ...process.env,
       PI_CODING_AGENT_DIR: agentDir,
       // Prepend stub `pi` so chat workers spawn the fake, never the real pi.
-      PATH: `${STUB_PI_DIR}:${process.env.PATH ?? ""}`,
+      PATH: `${STUB_BIN_DIR}${delimiter}${process.env.PATH ?? ""}`,
+      PI_WEB_E2E_NODE: process.execPath,
+      PI_WEB_E2E_STUB: join(STUB_PI_DIR, "pi"),
       // Ensure auth is off for tests regardless of the dev's shell env.
       PI_WEB_TOKEN: "",
       // Lower the large-session truncation thresholds so the load-earlier spec
@@ -94,14 +97,16 @@ export async function startServer(): Promise<StartedServer> {
   child.stdout?.on("data", (d) => process.stdout.write(`[pi-web] ${d}`));
   child.stderr?.on("data", (d) => process.stderr.write(`[pi-web] ${d}`));
 
-  await waitForReady(baseURL);
+  await Promise.race([
+    waitForReady(baseURL),
+    new Promise<never>((_, reject) => child.once("error", reject)),
+  ]);
   return { baseURL, agentDir, sessionsDir, child };
 }
 
-export function stopServer(pid: number): void {
-  try {
-    process.kill(pid, "SIGTERM");
-  } catch {
-    /* already gone */
-  }
+export async function stopServer(child: ChildProcess): Promise<void> {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const closed = new Promise<void>((resolve) => child.once("close", resolve));
+  child.kill("SIGTERM");
+  await closed;
 }

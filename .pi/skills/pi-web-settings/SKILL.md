@@ -1,6 +1,6 @@
 ---
 name: pi-web-settings
-description: Read or change pi-web settings (theme, language, fonts, auto-title, notifications, artifact visibility, session display defaults, cat/pomodoro). Use when the user wants to change how pi-web looks or behaves. Slash command /skill:pi-web-settings.
+description: Read or change pi-web settings (theme, language, fonts, notifications, artifact visibility, session display defaults, cat/pomodoro). Use when the user wants to change how pi-web looks or behaves. Slash command /skill:pi-web-settings.
 ---
 
 # pi-web settings
@@ -12,11 +12,11 @@ pi-web-ctl settings get
 pi-web-ctl settings get theme
 pi-web-ctl settings set theme dark
 pi-web-ctl settings set language ja
-pi-web-ctl settings set auto-title off
+pi-web-ctl settings set notify-on-done on
 ```
 
 If `pi-web-ctl` is not on `PATH`, run `python3 ~/.pi/agent/bin/pi-web-ctl`.
 
-Aliases (CLI also accepts the raw storage key): theme, language, font-ui, font-content, font-code, auto-title, auto-title-mode, auto-title-model, notify-on-done, artifacts, thinking, tools, tool-outputs, cat, bedtime, wakeup, layout, spinner.
+Aliases (CLI also accepts the raw storage key): theme, language, font-ui, font-content, font-code, notify-on-done, artifacts, thinking, tools, tool-outputs, cat, bedtime, wakeup, layout, spinner.
 
 Booleans accept on/off. Theme and fonts apply live; language reloads open pi-web tabs (same as the Settings picker) so chrome re-renders. Report the new value. Do not rewrite custom-languages JSON unless the user is adding a language.

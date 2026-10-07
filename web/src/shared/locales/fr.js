@@ -248,20 +248,6 @@ export default {
   'settings.showBtwHint':
     'Inclure les chats jetables btw dans la liste des sessions. Masqués par défaut.',
 
-  'settings.sessionTitles': 'Titres de session',
-  'settings.autoTitle': 'Générer les titres automatiquement',
-  'settings.autoTitleHint':
-    'Laissez pi-web nommer les sessions automatiquement à partir du premier message.',
-  'settings.whenToTitle': 'Quand titrer',
-  'settings.whenToTitleHint':
-    'Titrer une session une fois, ou l’actualiser au fil des changements de sujet.',
-  'settings.titleOnce': 'Une fois par session',
-  'settings.titleEachTurn': 'À chaque nouveau message',
-  'settings.titleModel': 'Modèle de titrage',
-  'settings.titleModelHint':
-    'L’intégré est une heuristique de mots gratuite et instantanée (sans IA). Choisissez un modèle pour des titres plus pertinents — un petit modèle rapide est idéal.',
-  'settings.titleBuiltin': 'Heuristique intégrée (sans IA)',
-
   'settings.sessionDisplay': 'Affichage de session',
   'settings.thinkingExpanded': 'Afficher la réflexion par défaut',
   'settings.thinkingExpandedHint':

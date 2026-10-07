@@ -46,12 +46,6 @@ func (gopsutilSampler) Sample(pid int) (processSample, error) {
 	return processSample{RSSBytes: mem.RSS, CPUTimeS: times.User + times.System}, nil
 }
 
-// workerSnapshotter is the optional capability the chat sender (the worker
-// manager) exposes for the dashboard. Implemented by *workers.Manager.
-type workerSnapshotter interface {
-	Snapshot() []workers.WorkerSnapshot
-}
-
 type metricsResponse struct {
 	Process processMetrics  `json:"process"`
 	Workers []workerMetrics `json:"workers"`

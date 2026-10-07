@@ -19,8 +19,6 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
-  readdirSync,
-  rmSync,
   writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
@@ -235,7 +233,7 @@ async function startPiWeb(
     const launcher = windowsLauncher();
     if (!existsSync(launcher)) {
       throw new Error(
-        "pi-web launcher not found; reinstall with: pi install npm:@ygncode/pi-web@beta",
+        "pi-web launcher not found; install with: pi install git:github.com/stoneedle/pi-web",
       );
     }
     await pi.exec("wscript.exe", [launcher]);
@@ -400,21 +398,6 @@ export function withToken(url: string): string {
   if (!token) return url;
   const separator = url.includes("?") ? "&" : "?";
   return `${url}${separator}token=${encodeURIComponent(token)}`;
-}
-
-export function cleanupPiWebNpmTemps(agentRoot = agentDir()): number {
-  const scopeDir = join(agentRoot, "npm", "node_modules", "@ygncode");
-  let removed = 0;
-  try {
-    for (const name of readdirSync(scopeDir)) {
-      if (!name.startsWith(".pi-web-")) continue;
-      rmSync(join(scopeDir, name), { recursive: true, force: true });
-      removed++;
-    }
-  } catch {
-    // Package directory may not exist yet; nothing to clean.
-  }
-  return removed;
 }
 
 export function normalizeCommandArgs(args: unknown): string[] {
@@ -771,12 +754,8 @@ async function showRemoteAccess(
 }
 
 export default function (pi: ExtensionAPI) {
-  // Session auto-titling now lives in pi-web itself (see internal/server/
-  // auto_title.go), gated by the /settings page, so the extension no longer
-  // registers a title tool or input handler.
-
   // Start pi-web opportunistically when the extension loads so /remote works on a
-  // fresh shell after `pi install npm:@ygncode/pi-web@beta`.
+  // fresh shell after `pi install git:github.com/stoneedle/pi-web`.
   void detectHostPort(pi)
     .then((detected) => {
       if (!detected) return;
@@ -941,14 +920,8 @@ export default function (pi: ExtensionAPI) {
 
       if (subcommand === "update") {
         try {
-          const cleaned = cleanupPiWebNpmTemps();
-          ctx.ui.notify(
-            cleaned > 0
-              ? `Cleaned ${cleaned} stale npm temp dir(s). Updating pi-web package...`
-              : "Updating pi-web package...",
-            "info",
-          );
-          await pi.exec("pi", ["install", "npm:@ygncode/pi-web@beta"]);
+          ctx.ui.notify("Building and updating the pi-web fork...", "info");
+          await pi.exec("pi", ["install", "git:github.com/stoneedle/pi-web"]);
           try {
             await restartPiWeb(pi);
           } catch {
@@ -962,7 +935,7 @@ export default function (pi: ExtensionAPI) {
           return;
         } catch (err) {
           ctx.ui.notify(
-            `Failed to update pi-web: ${err}\nTry: rm -rf ~/.pi/agent/npm/node_modules/@ygncode/.pi-web-* && pi install npm:@ygncode/pi-web@beta`,
+            `Failed to update pi-web: ${err}\nTry: pi install git:github.com/stoneedle/pi-web`,
             "error",
           );
         }

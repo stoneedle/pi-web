@@ -248,19 +248,6 @@ export default {
   'settings.showBtwHint':
     'Incluye los chats temporales btw en la lista de sesiones. Ocultos por defecto.',
 
-  'settings.sessionTitles': 'Títulos de sesión',
-  'settings.autoTitle': 'Generar títulos automáticamente',
-  'settings.autoTitleHint':
-    'Deja que pi-web nombre las sesiones automáticamente a partir del primer mensaje.',
-  'settings.whenToTitle': 'Cuándo titular',
-  'settings.whenToTitleHint': 'Titula una sesión una vez o actualízala según cambie el enfoque.',
-  'settings.titleOnce': 'Una vez por sesión',
-  'settings.titleEachTurn': 'Cada nuevo mensaje',
-  'settings.titleModel': 'Modelo de títulos',
-  'settings.titleModelHint':
-    'El integrado es una heurística de palabras gratuita e instantánea (sin IA). Elige un modelo para títulos más inteligentes: uno pequeño y rápido es lo ideal.',
-  'settings.titleBuiltin': 'Heurística integrada (sin IA)',
-
   'settings.sessionDisplay': 'Vista de sesión',
   'settings.thinkingExpanded': 'Mostrar pensamiento por defecto',
   'settings.thinkingExpandedHint':

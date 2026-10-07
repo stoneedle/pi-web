@@ -244,18 +244,6 @@ export default {
   'settings.showBtwHint':
     'ລວມການສົນທະນາຮ່າງ btw ໃຊ້ຄັ້ງດຽວໄວ້ໃນລາຍການເຊດຊັນ. ເຊື່ອງໄວ້ໂດຍຄ່າເລີ່ມຕົ້ນ.',
 
-  'settings.sessionTitles': 'ຫົວຂໍ້ເຊດຊັນ',
-  'settings.autoTitle': 'ສ້າງຫົວຂໍ້ອັດຕະໂນມັດ',
-  'settings.autoTitleHint': 'ໃຫ້ pi-web ຕັ້ງຊື່ເຊດຊັນອັດຕະໂນມັດຈາກຂໍ້ຄວາມທຳອິດ.',
-  'settings.whenToTitle': 'ເມື່ອໃດຈຶ່ງຕັ້ງຫົວຂໍ້',
-  'settings.whenToTitleHint': 'ຕັ້ງຫົວຂໍ້ເຊດຊັນຄັ້ງດຽວ ຫຼື ໂຫຼດຄືນເມື່ອຈຸດສຸມປ່ຽນ.',
-  'settings.titleOnce': 'ຄັ້ງດຽວຕໍ່ເຊດຊັນ',
-  'settings.titleEachTurn': 'ທຸກຂໍ້ຄວາມໃໝ່',
-  'settings.titleModel': 'ໂມເດວຫົວຂໍ້',
-  'settings.titleModelHint':
-    'ມີໃນຕົວແມ່ນ heuristic ຄຳສັບຟຣີ ທັນທີ (ບໍ່ມີ AI). ເລືອກໂມເດວເພື່ອຫົວຂໍ້ທີ່ສະຫຼາດກວ່າ — ໂມເດວນ້ອຍ ແລະ ໄວແມ່ນເໝາະສົມ.',
-  'settings.titleBuiltin': 'Heuristic ມີໃນຕົວ (ບໍ່ມີ AI)',
-
   'settings.sessionDisplay': 'ການສະແດງ session',
   'settings.thinkingExpanded': 'ສະແດງການຄິດເປັນຄ່າເລີ່ມຕົ້ນ',
   'settings.thinkingExpandedHint':

@@ -1,12 +1,8 @@
-# pi-web installer for Windows — downloads the binary and sets up auto-start.
+# pi-web source-fork installer for Windows — installs the local build and auto-start.
 #
-# Standalone (no pi required):
-#   irm https://raw.githubusercontent.com/ygncode/pi-web/main/install.ps1 | iex
-#
-# Via pi package (also registers /web, /remote commands):
-#   pi install npm:@ygncode/pi-web@beta
-#
-# Updates are handled by re-running the same command.
+# From the checkout: node scripts/run-lifecycle.mjs install
+# Via Pi: pi install git:github.com/stoneedle/pi-web
+# Updates use the same Git source and build the matching binary.
 #
 # Auto-start model (the Windows counterpart of install.sh's launchd/systemd
 # setup, kept admin-free): a HKCU Run-key entry launches pi-web-start.vbs at
@@ -18,7 +14,6 @@
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Repo = 'ygncode/pi-web'
 if ($env:PI_WEB_INSTALL_DIR) {
   $InstallDir = $env:PI_WEB_INSTALL_DIR
 } else {
@@ -37,38 +32,6 @@ $RunKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 function Info($msg) { Write-Host "-> $msg" }
 function Warn($msg) { Write-Host "!  $msg" -ForegroundColor Yellow }
 
-function Get-Arch {
-  $arch = "$env:PROCESSOR_ARCHITECTURE"
-  # An x64 PowerShell on ARM64 reports AMD64; prefer the OS architecture.
-  try { $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString() } catch {}
-  switch -Regex ($arch) {
-    '^(ARM64|Arm64)$' { return 'arm64' }
-    '^(AMD64|X64|x64)$' { return 'amd64' }
-    default { throw "Unsupported architecture: $arch" }
-  }
-}
-
-function Get-PackageTag {
-  # When running as an npm lifecycle script, install the binary that matches
-  # the npm package version so pinned installs stay pinned (see install.sh).
-  if ($env:npm_package_name -eq '@ygncode/pi-web' -and $env:npm_package_version) {
-    return 'v' + $env:npm_package_version.TrimStart('v')
-  }
-  return $null
-}
-
-function Get-LatestTag {
-  try {
-    $rel = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/latest"
-    if ($rel.tag_name) { return $rel.tag_name }
-  } catch {}
-  # /latest ignores prereleases. Fall back to the newest release of any type
-  # (GitHub orders by creation date; install.sh sorts by semver instead).
-  $rels = @(Invoke-RestMethod "https://api.github.com/repos/${Repo}/releases?per_page=1")
-  if ($rels.Count -gt 0 -and $rels[0].tag_name) { return $rels[0].tag_name }
-  throw "Could not determine latest release tag from $Repo."
-}
-
 function Get-InstalledVersion {
   if (Test-Path $Binary) {
     try {
@@ -80,18 +43,6 @@ function Get-InstalledVersion {
   # version file.
   if (Test-Path $VersionFile) { return (Get-Content $VersionFile -First 1) }
   return $null
-}
-
-function Get-Binary($arch, $tag) {
-  $asset = "pi-web-windows-$arch.exe"
-  $url = "https://github.com/$Repo/releases/download/$tag/$asset"
-  Info "Downloading pi-web $tag (windows-$arch)..."
-  Info "  $url"
-  $tmpDir = Join-Path ([IO.Path]::GetTempPath()) ('pi-web-' + [IO.Path]::GetRandomFileName())
-  New-Item -ItemType Directory -Path $tmpDir | Out-Null
-  $dest = Join-Path $tmpDir 'pi-web.exe'
-  Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
-  return $dest
 }
 
 function Stop-PiWeb {
@@ -111,7 +62,7 @@ function Install-Binary($src, $tag) {
   $old = "$Binary.old"
   Remove-Item $old -Force -ErrorAction SilentlyContinue
   if (Test-Path $Binary) { Move-Item $Binary $old -Force }
-  Move-Item $src $Binary -Force
+  Copy-Item $src $Binary -Force
   Remove-Item $old -Force -ErrorAction SilentlyContinue
 
   New-Item -ItemType Directory -Force -Path (Split-Path $VersionFile) | Out-Null
@@ -213,10 +164,11 @@ function Main {
   Info 'pi-web installer (Windows)'
   Write-Host ''
 
-  $arch = Get-Arch
-
-  $tag = Get-PackageTag
-  if ($tag) { Info "Using pi-web package version $tag." } else { $tag = Get-LatestTag }
+  $sourceBinary = $env:PI_WEB_SOURCE_BINARY
+  if (-not $sourceBinary) { $sourceBinary = Join-Path $PSScriptRoot 'pi-web.exe' }
+  if (-not (Test-Path $sourceBinary)) { throw 'Build the fork first with make build BINARY=pi-web.exe, or run node scripts/run-lifecycle.mjs install.' }
+  $tag = $env:PI_WEB_SOURCE_VERSION
+  if (-not $tag) { $tag = (& $sourceBinary -version).Trim() }
 
   $installed = Get-InstalledVersion
   if ((Test-Path $Binary) -and $installed -eq $tag) {
@@ -227,12 +179,10 @@ function Main {
   }
   if ($installed) { Info "Update available: $installed -> $tag" }
 
-  $tmpBinary = Get-Binary $arch $tag
-
   $inplace = [bool]$env:PI_WEB_INPLACE_UPDATE
   if ((Test-Path $Binary) -and -not $inplace) { Stop-PiWeb }
 
-  Install-Binary $tmpBinary $tag
+  Install-Binary $sourceBinary $tag
   Install-Ctl
 
   # In-place self-update: pi-web triggered this and restarts itself afterward.

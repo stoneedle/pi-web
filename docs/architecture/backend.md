@@ -50,7 +50,6 @@ pi-web/
 │   │   ├── client.go           # JSONL RPC command builders
 │   │   ├── worker.go           # pi --mode rpc subprocess worker
 │   │   ├── stream.go           # SSE chat-preview stream accumulator
-│   │   ├── prompt.go           # OneShotPrompt: spawn pi for a single prompt (auto-title)
 │   │   └── oneshot.go          # One-shot RPC for model enumeration
 │   ├── server/
 │   │   ├── server.go           # Server type, deps, SSE registry, route registration, SQLite open
@@ -65,8 +64,7 @@ pi-web/
 │   │   ├── files.go            # /api/files handler + per-cwd file-walk cache
 │   │   ├── settings.go         # Server-backed user settings (/api/settings) + SPA shell helpers
 │   │   ├── btw.go              # btw scratch-chat registry: get/new + legacy migration (SQLite)
-│   │   ├── auto_title.go       # Auto-title sessions via OneShotPrompt; guards against clobbering user names
-│   │   ├── auto_title_heuristic.go # Heuristic fallback title from first user message
+│   │   ├── session_title.go    # Active owner rename transport; inactive native metadata writes
 │   │   ├── metrics.go          # /metrics + /api/metrics + pprof registration (gopsutil sampler)
 │   │   ├── scratchpad.go       # Per-project scratchpad get/save (SQLite)
 │   │   ├── annotations.go      # Per-session review annotations: list/create/delete + SSE snapshot (SQLite)
@@ -85,7 +83,6 @@ pi-web/
 │   │   └── status_watcher.go   # fsnotify on session-status/ dir
 │   ├── sessions/
 │   │   ├── session.go          # Session/SessionSummary structs, ParseFile, LoadAll, CreateSessionFile, RenameSession, fork/clone
-│   │   ├── title.go            # ReadTitleInputs: extract auto-title source text from a session
 │   │   ├── cache.go            # Modtime-aware session cache
 │   │   └── lookup.go           # Resolve session by ID
 │   ├── schedules/
@@ -141,15 +138,12 @@ type Server struct {
     runInstall    func(ctx context.Context) error // optional self-update install
     runRestart    func() error                    // optional self-update restart
     updateMu      sync.Mutex      // serializes install/restart
-    disableBackgroundJobs bool    // development server: no scheduler/drainer/auto-title/push
+    disableBackgroundJobs bool    // development server: no scheduler/drainer/push
 
     fileWalk     *fileWalkCache  // bounded dir-listing cache for @mention autocomplete
     fileWalkOnce sync.Once
 
-    // Metrics dashboard (see metrics.go) and auto-title bookkeeping (see
-    // auto_title.go), grouped so each subsystem owns its fields + lock.
-    metrics   metricsState
-    autoTitle autoTitleState
+    metrics metricsState
 }
 ```
 
@@ -160,7 +154,7 @@ type Server struct {
 `RunInstall`/`RunRestart` are nil the corresponding endpoints respond `503`.
 `DisableBackgroundJobs` marks the internal development server: it still watches
 and serves the shared data, but does not run scheduling, queue draining,
-auto-titling, or push-delivery side effects.
+or push-delivery side effects.
 
 On `New`, the server opens (and migrates) a SQLite database at
 `~/.pi/agent/pi-web.sqlite` with eleven tables: `scratchpads` (per project path),
@@ -378,7 +372,7 @@ compatibility. Multipart chat uploads retain their separate 32 MiB total and
 ## Background Work and Shutdown
 
 Side-effecting asynchronous work started by the server—chat dispatch, worker
-prewarming, scheduled runs, queue dispatch, auto-titling, and push
+prewarming, scheduled runs, queue dispatch, and push
 notifications—is registered through `startTask`. Every task receives the
 server-owned context. Shutdown prevents new tasks, cancels that context, stops
 the long-running watchers/drainers, waits for all accepted work, and only then

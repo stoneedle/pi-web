@@ -37,7 +37,7 @@ make e2e    # Playwright E2E; needs `make e2e-setup` once. Not in test/check
 ## Critical Rules
 
 1. **Live app and export are separate renders.** Live = Svelte SPA via `internal/ui/embedded/app.html` (`spa_page.go`). Export/share = static snapshot via `internal/ui/embedded/share-session.html` (`export.go`), built from `web/src/export/export-entry.js` which reuses the live `web/src/session/` modules. Never leak live-only chrome (SPA scripts, SSE, chat) into the export.
-2. **Existing session files are append-only for `session_info`** (browser rename + auto-titling). Conversation entries come from the `pi --mode rpc` worker, not pi-web.
+2. **Native session names have one owner.** `pi-title-glyphs` owns automatic naming. Active browser renames go to its authenticated per-session owner; inactive renames append native `session_info` metadata with entry IDs and parent links. Conversation entries come from the `pi --mode rpc` worker.
 3. **One worker per session.** Reused; crashed = evicted + replaced; idle reaped after 10 min.
 4. **Icons:** Lucide only, via `web/src/shared/icons.js` — no hand-drawn SVG or unicode glyphs.
 5. **i18n:** user-facing strings go through `t()` from `web/src/shared/i18n.js`. Edit **only** `web/src/shared/locales/en.js` — it is the source of truth; add/change keys there. Never hand-write the other locale files (`de.js`, `es.js`, …); they are machine-drafted by translating `en.js` via `pi`, the same English-source-only approach as the localized docs (see [Localized docs](#localized-docs)). Session content is never translated.

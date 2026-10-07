@@ -26,6 +26,11 @@ type ChatSender interface {
 	EnsureWorker(ctx context.Context, sessionID, sessionPath string) error
 }
 
+// workerSnapshotter exposes the active workers to metrics and session naming.
+type workerSnapshotter interface {
+	Snapshot() []workers.WorkerSnapshot
+}
+
 func (s *Server) handleChat(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeJSONError(w, http.StatusMethodNotAllowed, "method not allowed")

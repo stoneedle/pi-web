@@ -248,19 +248,6 @@ export default {
   'settings.showBtwHint':
     'တစ်ခါသုံး btw မှတ်စုချတ်များကို ဆက်ရှင်စာရင်းတွင် ထည့်သွင်းပါ။ မူရင်းအတိုင်း ဖျောက်ထားသည်။',
 
-  'settings.sessionTitles': 'ဆက်ရှင် ခေါင်းစဉ်များ',
-  'settings.autoTitle': 'ခေါင်းစဉ်များ အလိုအလျောက် ဖန်တီး',
-  'settings.autoTitleHint': 'ပထမမက်ဆေ့ချ်မှ ဆက်ရှင်များကို pi-web အလိုအလျောက် အမည်ပေးပါစေ။',
-  'settings.whenToTitle': 'မည်သည့်အခါ ခေါင်းစဉ်တပ်မည်',
-  'settings.whenToTitleHint':
-    'ဆက်ရှင်ကို တစ်ကြိမ် ခေါင်းစဉ်တပ်ပါ၊ သို့မဟုတ် အာရုံပြောင်းသည်နှင့်အမျှ ပြန်လည်ဆန်းသစ်ပါ။',
-  'settings.titleOnce': 'ဆက်ရှင်တစ်ခုလျှင် တစ်ကြိမ်',
-  'settings.titleEachTurn': 'မက်ဆေ့ချ်အသစ်တိုင်း',
-  'settings.titleModel': 'ခေါင်းစဉ် မော်ဒယ်',
-  'settings.titleModelHint':
-    'အတွင်းပါသည် အခမဲ့၊ ချက်ချင်း စကားလုံး heuristic (AI မပါ)။ ပိုမိုဉာဏ်ရှိသော ခေါင်းစဉ်များအတွက် မော်ဒယ်တစ်ခု ရွေးပါ — သေးငယ်၍ မြန်သည်က အကောင်းဆုံး။',
-  'settings.titleBuiltin': 'အတွင်းပါ heuristic (AI မပါ)',
-
   'settings.sessionDisplay': 'Session ပြသမှု',
   'settings.thinkingExpanded': 'တွေးခေါ်မှုကို မူရင်းအဖြစ် ပြ',
   'settings.thinkingExpandedHint':

@@ -245,19 +245,6 @@ export default {
   'settings.showBtwHint':
     '使い捨ての btw メモチャットをセッション一覧に含めます。既定では非表示です。',
 
-  'settings.sessionTitles': 'セッションのタイトル',
-  'settings.autoTitle': 'タイトルを自動生成',
-  'settings.autoTitleHint': '最初のメッセージから pi-web に自動でセッションを命名させます。',
-  'settings.whenToTitle': 'タイトルを付けるタイミング',
-  'settings.whenToTitleHint':
-    'セッションに一度タイトルを付けるか、焦点の変化に合わせて更新します。',
-  'settings.titleOnce': 'セッションごとに1回',
-  'settings.titleEachTurn': '新しいメッセージごと',
-  'settings.titleModel': 'タイトル用モデル',
-  'settings.titleModelHint':
-    '組み込みは無料で即時の単語ヒューリスティック（AI なし）です。より賢いタイトルにはモデルを選択してください — 小さく高速なものが理想的です。',
-  'settings.titleBuiltin': '組み込みヒューリスティック（AI なし）',
-
   'settings.sessionDisplay': 'セッション表示',
   'settings.thinkingExpanded': '思考をデフォルトで表示',
   'settings.thinkingExpandedHint':

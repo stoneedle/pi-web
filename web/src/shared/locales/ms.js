@@ -245,19 +245,6 @@ export default {
   'settings.showBtwHint':
     'Sertakan sembang conteng btw sekali guna dalam senarai sesi. Disembunyikan secara lalai.',
 
-  'settings.sessionTitles': 'Tajuk Sesi',
-  'settings.autoTitle': 'Jana tajuk secara automatik',
-  'settings.autoTitleHint':
-    'Biarkan pi-web menamakan sesi secara automatik daripada mesej pertama.',
-  'settings.whenToTitle': 'Bila hendak beri tajuk',
-  'settings.whenToTitleHint': 'Beri tajuk sesi sekali, atau segarkan apabila fokus berubah.',
-  'settings.titleOnce': 'Sekali setiap sesi',
-  'settings.titleEachTurn': 'Setiap mesej baharu',
-  'settings.titleModel': 'Model tajuk',
-  'settings.titleModelHint':
-    'Terbina dalam ialah heuristik perkataan percuma dan segera (tanpa AI). Pilih model untuk tajuk yang lebih bijak — yang kecil dan pantas adalah ideal.',
-  'settings.titleBuiltin': 'Heuristik terbina dalam (tanpa AI)',
-
   'settings.sessionDisplay': 'Paparan sesi',
   'settings.thinkingExpanded': 'Tunjukkan pemikiran secara lalai',
   'settings.thinkingExpandedHint':

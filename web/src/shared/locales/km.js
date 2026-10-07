@@ -243,18 +243,6 @@ export default {
   'settings.showBtw': 'បង្ហាញការជជែក btw ក្នុងបញ្ជី',
   'settings.showBtwHint': 'រួមបញ្ចូលការជជែកព្រាង btw ប្រើម្ដងក្នុងបញ្ជីវគ្គ។ លាក់តាមលំនាំដើម។',
 
-  'settings.sessionTitles': 'ចំណងជើងវគ្គ',
-  'settings.autoTitle': 'បង្កើតចំណងជើងស្វ័យប្រវត្តិ',
-  'settings.autoTitleHint': 'អនុញ្ញាតឱ្យ pi-web ដាក់ឈ្មោះវគ្គស្វ័យប្រវត្តិពីសារដំបូង។',
-  'settings.whenToTitle': 'ពេលណាដាក់ចំណងជើង',
-  'settings.whenToTitleHint': 'ដាក់ចំណងជើងវគ្គម្ដង ឬ ផ្ទុកវាឡើងវិញពេលការផ្ដោតផ្លាស់ប្ដូរ។',
-  'settings.titleOnce': 'ម្ដងក្នុងមួយវគ្គ',
-  'settings.titleEachTurn': 'រាល់សារថ្មី',
-  'settings.titleModel': 'ម៉ូដែលចំណងជើង',
-  'settings.titleModelHint':
-    'មានស្រាប់គឺជា heuristic ពាក្យឥតគិតថ្លៃ ភ្លាមៗ (គ្មាន AI)។ ជ្រើសម៉ូដែលសម្រាប់ចំណងជើងឆ្លាតវៃជាងមុន — តូច និងលឿនគឺល្អបំផុត។',
-  'settings.titleBuiltin': 'Heuristic មានស្រាប់ (គ្មាន AI)',
-
   'settings.sessionDisplay': 'ការបង្ហាញ session',
   'settings.thinkingExpanded': 'បង្ហាញការគិតតាមលំនាំដើម',
   'settings.thinkingExpandedHint':

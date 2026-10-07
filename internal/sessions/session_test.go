@@ -463,10 +463,18 @@ func TestRenameSessionAppendsSessionInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := string(data)
-	wantLine := `{"type":"session_info","timestamp":"2026-05-08T10:01:02Z","name":"New Name"}`
-	if !strings.Contains(got, wantLine+"\n") {
-		t.Fatalf("appended content = %q, want line %q", got, wantLine)
+	if !strings.HasPrefix(string(data), content) {
+		t.Fatal("rename rewrote existing history")
+	}
+	var entry map[string]any
+	if err := json.Unmarshal(data[len(content):], &entry); err != nil {
+		t.Fatal(err)
+	}
+	if entry["type"] != "session_info" || entry["name"] != "New Name" || entry["timestamp"] != "2026-05-08T10:01:02Z" || entry["parentId"] != nil {
+		t.Fatalf("appended entry = %#v", entry)
+	}
+	if id, _ := entry["id"].(string); len(id) != 8 {
+		t.Fatalf("missing native entry id: %#v", entry)
 	}
 	s, err := ParseSummary(path, "--proj--", "s.jsonl")
 	if err != nil {

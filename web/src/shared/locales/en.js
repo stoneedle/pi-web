@@ -367,18 +367,6 @@ export default {
   'settings.showBtwHint':
     'Include the throwaway btw scratch-chats in the sessions list. Hidden by default.',
 
-  'settings.sessionTitles': 'Session Titles',
-  'settings.autoTitle': 'Auto-generate titles',
-  'settings.autoTitleHint': 'Let pi-web name sessions automatically from the first message.',
-  'settings.whenToTitle': 'When to title',
-  'settings.whenToTitleHint': 'Title a session once, or refresh it as the focus shifts.',
-  'settings.titleOnce': 'Once per session',
-  'settings.titleEachTurn': 'Every new message',
-  'settings.titleModel': 'Title model',
-  'settings.titleModelHint':
-    'Built-in is a free, instant word heuristic (no AI). Pick a model for smarter titles — a small, fast one is ideal.',
-  'settings.titleBuiltin': 'Built-in heuristic (no AI)',
-
   'settings.sessionDisplay': 'Session Display',
   'settings.thinkingExpanded': 'Show thinking by default',
   'settings.thinkingExpandedHint':

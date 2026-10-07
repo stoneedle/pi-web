@@ -31,7 +31,6 @@ type summaryLine struct {
 	ID        string      `json:"id"`
 	Provider  string      `json:"provider"`
 	ModelID   string      `json:"modelId"`
-	AutoTitle bool        `json:"autoTitle"`
 	Message   *summaryMsg `json:"message"`
 }
 
@@ -343,20 +342,6 @@ func truncate(s string, n int) string {
 var ErrEmptySessionName = errors.New("session name is empty")
 var ErrSessionEntryNotFound = errors.New("session entry not found")
 
-// RenameSession persists a user display-name change by appending a session_info
-// entry. Parsers already treat the latest session_info.name as authoritative,
-// so this preserves JSONL history instead of rewriting existing entries.
-func RenameSession(path, name string, now func() time.Time) error {
-	return appendSessionName(path, name, false, now)
-}
-
-// AutoTitleSession is like RenameSession but marks the entry as written by
-// pi-web's auto-titler (autoTitle:true), so a later read can tell its own titles
-// apart from a user's manual rename and re-title safely across restarts.
-func AutoTitleSession(path, name string, now func() time.Time) error {
-	return appendSessionName(path, name, true, now)
-}
-
 func loadEntriesFromFile(path string) ([]map[string]any, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -440,7 +425,8 @@ func LabelSessionEntry(path, targetID, label string, now func() time.Time) error
 	return err
 }
 
-func appendSessionName(path, name string, auto bool, now func() time.Time) error {
+// RenameSession appends native session_info metadata to an inactive session.
+func RenameSession(path, name string, now func() time.Time) error {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return ErrEmptySessionName
@@ -449,16 +435,35 @@ func appendSessionName(path, name string, auto bool, now func() time.Time) error
 		now = time.Now
 	}
 
+	entries, err := loadEntriesFromFile(path)
+	if err != nil {
+		return err
+	}
+	var parentID any
+	for _, entry := range entries {
+		if entry["type"] == "session" {
+			continue
+		}
+		if id, _ := entry["id"].(string); id != "" {
+			parentID = id
+		}
+	}
+	id, err := randomEntryID()
+	if err != nil {
+		return err
+	}
 	entry := struct {
 		Type      string `json:"type"`
+		ID        string `json:"id"`
+		ParentID  any    `json:"parentId"`
 		Timestamp string `json:"timestamp"`
 		Name      string `json:"name"`
-		AutoTitle bool   `json:"autoTitle,omitempty"`
 	}{
 		Type:      "session_info",
-		Timestamp: now().UTC().Format(time.RFC3339),
+		ID:        id,
+		ParentID:  parentID,
+		Timestamp: now().UTC().Format(time.RFC3339Nano),
 		Name:      name,
-		AutoTitle: auto,
 	}
 	data, err := json.Marshal(entry)
 	if err != nil {

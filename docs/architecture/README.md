@@ -46,7 +46,7 @@ This directory contains the architecture documentation for **pi-web**, a local w
 
 ## Key Design Decisions
 
-1. **Append-only session metadata**: pi-web reads from `~/.pi/agent/sessions/` and avoids rewriting session history. New sessions can be created via the web UI; rename and auto-title append a `session_info` metadata line, and entry labels append a `label` line, to the existing JSONL file.
+1. **Append-only session metadata**: pi-web reads from `~/.pi/agent/sessions/` and avoids rewriting session history. New sessions can be created via the web UI; active renames are committed by the Pi title owner, inactive renames append native `session_info`, and entry labels append `label` metadata. `pi-title-glyphs` owns automatic naming.
 
 2. **Live updates via SSE**: The browser opens an EventSource connection. The server watches session files via `fsnotify` (with polling fallback) and pushes `reload` events; session pages fetch `/api/session` to reconcile canonical JSONL entries. Browser chat can also receive best-effort `chat-preview` SSE events before JSONL reconciliation.
 

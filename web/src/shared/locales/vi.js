@@ -244,18 +244,6 @@ export default {
   'settings.showBtwHint':
     'Bao gồm các trò chuyện nháp btw dùng một lần trong danh sách phiên. Ẩn theo mặc định.',
 
-  'settings.sessionTitles': 'Tiêu đề phiên',
-  'settings.autoTitle': 'Tự động tạo tiêu đề',
-  'settings.autoTitleHint': 'Để pi-web tự đặt tên phiên từ tin nhắn đầu tiên.',
-  'settings.whenToTitle': 'Khi nào đặt tiêu đề',
-  'settings.whenToTitleHint': 'Đặt tiêu đề phiên một lần, hoặc làm mới khi trọng tâm thay đổi.',
-  'settings.titleOnce': 'Một lần mỗi phiên',
-  'settings.titleEachTurn': 'Mỗi tin nhắn mới',
-  'settings.titleModel': 'Mô hình tiêu đề',
-  'settings.titleModelHint':
-    'Tích hợp là heuristic từ ngữ miễn phí, tức thời (không AI). Chọn một mô hình để có tiêu đề thông minh hơn — loại nhỏ, nhanh là lý tưởng.',
-  'settings.titleBuiltin': 'Heuristic tích hợp (không AI)',
-
   'settings.sessionDisplay': 'Hiển thị phiên',
   'settings.thinkingExpanded': 'Hiển thị suy nghĩ theo mặc định',
   'settings.thinkingExpandedHint':

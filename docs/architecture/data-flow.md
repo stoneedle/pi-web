@@ -15,7 +15,7 @@ Sessions are stored as **JSONL** files (one JSON object per line):
 {"type":"session","version":3,"id":"uuid","timestamp":"2026-01-15T10:30:00Z","cwd":"/Users/me/project","name":"My Session"}
 {"type":"message","timestamp":"2026-01-15T10:30:01Z","message":{"role":"user","content":"Hello"}}
 {"type":"message","timestamp":"2026-01-15T10:30:05Z","message":{"role":"assistant","content":"Hi!"},"usage":{"totalTokens":42,"cost":{"total":0.0001}}}
-{"type":"session_info","timestamp":"2026-01-15T10:30:06Z","name":"Renamed Session"}
+{"type":"session_info","id":"a1b2c3d4","parentId":null,"timestamp":"2026-01-15T10:30:06Z","name":"Renamed Session"}
 {"type":"tool_call","timestamp":"2026-01-15T10:30:06Z","tool":"bash","command":"ls -la"}
 {"type":"tool_result","timestamp":"2026-01-15T10:30:07Z","tool":"bash","output":"..."}
 {"type":"branch_summary","timestamp":"2026-01-15T10:35:00Z","branch":"main","summary":"..."}
@@ -164,18 +164,17 @@ Browser POST /api/rename-session?id=<id>
            │
            ├──▶ Decode JSON body → {"name":"New Name"}
            ├──▶ Resolve session ID → filesystem path
-           ├──▶ sessions.RenameSession(path, name, now)
-           │         └──▶ Append JSONL line: {"type":"session_info","timestamp":"...","name":"New Name"}
+           ├──▶ active: authenticated loopback request to pi-title-glyphs owner
+           │         └──▶ Pi setSessionName commits native metadata and invalidates pending summary
+           ├──▶ inactive: sessions.RenameSession appends native id/parentId/name metadata
            ├──▶ record modtime + broadcast "reload" to session SSE clients
            │
            └──▶ Return {"ok": true, "name": "New Name"}
 ```
 
-pi-web only ever **appends** metadata to an existing session JSONL file — it never
-rewrites existing entries. There are three append paths: browser rename
-(`session_info`), auto-titling (`session_info`, marked so a user rename always
-wins), and entry labels (`label`). Creating new sessions (including btw, fork,
-clone, and schedule runs) writes fresh JSONL files instead.
+Pi's saved `session_info.name` is the shared identity. `pi-title-glyphs` owns initial naming and optional model summarization. Its latest persisted metadata revision makes a manual name ineligible for automatic replacement. Active renames enter the holding Pi instance through its private loopback owner; a live-owner error leaves the name unchanged. Inactive renames and entry labels append metadata, preserving existing history. Creating new sessions writes fresh JSONL files.
+
+The owner registration lives at `<agent-dir>/extension-data/pi-title-glyphs/owners/<session-filename>.json` and contains `pid`, `port`, `token` and native `sessionId`. The web checks process liveness and the native UUID before sending authenticated `POST /title` with `{ "operation": "rename", "value": "New Name", "sessionId": "..." }`. The response follows the native commit. The shared regression entrance is `PI_TITLE_GLYPHS_ROOT=/path/to/pi-title-glyphs make title-e2e`.
 
 ## Data Flow: Live Reload
 

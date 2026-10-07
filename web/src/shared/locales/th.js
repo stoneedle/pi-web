@@ -244,18 +244,6 @@ export default {
   'settings.showBtw': 'แสดงแชท btw ในรายการ',
   'settings.showBtwHint': 'รวมแชททด btw ที่ใช้แล้วทิ้งไว้ในรายการเซสชัน ซ่อนไว้ตามค่าเริ่มต้น',
 
-  'settings.sessionTitles': 'ชื่อเซสชัน',
-  'settings.autoTitle': 'สร้างชื่ออัตโนมัติ',
-  'settings.autoTitleHint': 'ให้ pi-web ตั้งชื่อเซสชันโดยอัตโนมัติจากข้อความแรก',
-  'settings.whenToTitle': 'เมื่อใดที่จะตั้งชื่อ',
-  'settings.whenToTitleHint': 'ตั้งชื่อเซสชันครั้งเดียว หรือรีเฟรชเมื่อโฟกัสเปลี่ยน',
-  'settings.titleOnce': 'ครั้งเดียวต่อเซสชัน',
-  'settings.titleEachTurn': 'ทุกข้อความใหม่',
-  'settings.titleModel': 'โมเดลตั้งชื่อ',
-  'settings.titleModelHint':
-    'ในตัวเป็นฮิวริสติกคำที่ฟรีและทันที (ไม่มี AI) เลือกโมเดลเพื่อชื่อที่ฉลาดขึ้น — โมเดลเล็กและเร็วเหมาะที่สุด',
-  'settings.titleBuiltin': 'ฮิวริสติกในตัว (ไม่มี AI)',
-
   'settings.sessionDisplay': 'การแสดงผลเซสชัน',
   'settings.thinkingExpanded': 'แสดงการคิดเป็นค่าเริ่มต้น',
   'settings.thinkingExpandedHint':

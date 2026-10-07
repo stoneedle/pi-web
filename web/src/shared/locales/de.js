@@ -247,18 +247,6 @@ export default {
   'settings.showBtwHint':
     'Die kurzlebigen btw-Notiz-Chats in der Sitzungsliste einschließen. Standardmäßig ausgeblendet.',
 
-  'settings.sessionTitles': 'Sitzungstitel',
-  'settings.autoTitle': 'Titel automatisch erzeugen',
-  'settings.autoTitleHint': 'Lass pi-web Sitzungen automatisch aus der ersten Nachricht benennen.',
-  'settings.whenToTitle': 'Wann betiteln',
-  'settings.whenToTitleHint': 'Eine Sitzung einmal betiteln oder bei Themenwechsel aktualisieren.',
-  'settings.titleOnce': 'Einmal pro Sitzung',
-  'settings.titleEachTurn': 'Bei jeder neuen Nachricht',
-  'settings.titleModel': 'Titelmodell',
-  'settings.titleModelHint':
-    'Integriert ist eine kostenlose, sofortige Wort-Heuristik (keine KI). Wähle ein Modell für bessere Titel — ein kleines, schnelles ist ideal.',
-  'settings.titleBuiltin': 'Integrierte Heuristik (keine KI)',
-
   'settings.sessionDisplay': 'Sitzungsanzeige',
   'settings.thinkingExpanded': 'Denken standardmäßig anzeigen',
   'settings.thinkingExpandedHint':

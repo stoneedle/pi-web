@@ -57,7 +57,7 @@ type Deps struct {
 	// takes over. Optional; when nil /api/restart responds 503.
 	RunRestart func() error
 	// DisableBackgroundJobs keeps the development server from duplicating the
-	// installed server's scheduler, queue drainer, auto-titles, and pushes.
+	// installed server's scheduler, queue drainer, and pushes.
 	DisableBackgroundJobs bool
 }
 
@@ -103,10 +103,7 @@ type Server struct {
 	fileWalk     *fileWalkCache
 	fileWalkOnce sync.Once
 
-	// Metrics dashboard (see metrics.go) and auto-title bookkeeping (see
-	// auto_title.go), grouped so each subsystem owns its own fields + lock.
-	metrics   metricsState
-	autoTitle autoTitleState
+	metrics metricsState
 }
 
 // metricsState backs the metrics dashboard. startedAt drives process uptime;
@@ -117,16 +114,6 @@ type metricsState struct {
 	sampler   processSampler
 	cpuMu     sync.Mutex
 	cpuLast   map[int]cpuMark
-}
-
-// autoTitleState guards auto-titling against re-titling loops and clobbering
-// user-set names.
-type autoTitleState struct {
-	mu        sync.Mutex
-	inFlight  map[string]bool
-	name      map[string]string // sessID -> the title pi-web last set
-	count     map[string]int    // sessID -> user-msg count at last titling
-	userOwned map[string]bool   // sessID -> user named it; never auto-title
 }
 
 func New(deps Deps) (*Server, error) {
@@ -175,12 +162,6 @@ func New(deps Deps) (*Server, error) {
 		metrics: metricsState{
 			startedAt: now(),
 			cpuLast:   make(map[int]cpuMark),
-		},
-		autoTitle: autoTitleState{
-			inFlight:  make(map[string]bool),
-			name:      make(map[string]string),
-			count:     make(map[string]int),
-			userOwned: make(map[string]bool),
 		},
 	}
 	s.schedules.Now = now

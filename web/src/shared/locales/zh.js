@@ -240,18 +240,6 @@ export default {
   'settings.showBtw': '在列表中显示 btw 聊天',
   'settings.showBtwHint': '在会话列表中包含临时的 btw 草稿聊天。默认隐藏。',
 
-  'settings.sessionTitles': '会话标题',
-  'settings.autoTitle': '自动生成标题',
-  'settings.autoTitleHint': '让 pi-web 根据第一条消息自动为会话命名。',
-  'settings.whenToTitle': '何时生成标题',
-  'settings.whenToTitleHint': '为会话生成一次标题，或随焦点变化刷新。',
-  'settings.titleOnce': '每个会话一次',
-  'settings.titleEachTurn': '每条新消息',
-  'settings.titleModel': '标题模型',
-  'settings.titleModelHint':
-    '内置是免费、即时的词语启发式（无 AI）。选择一个模型以获得更智能的标题——小而快的模型最为理想。',
-  'settings.titleBuiltin': '内置启发式（无 AI）',
-
   'settings.sessionDisplay': '会话显示',
   'settings.thinkingExpanded': '默认展示思考',
   'settings.thinkingExpandedHint':

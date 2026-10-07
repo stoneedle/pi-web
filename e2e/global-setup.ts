@@ -1,6 +1,6 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { STATE_FILE, TMP_DIR, type ServerState } from "./lib/paths";
-import { startServer } from "./lib/server";
+import { startServer, stopServer } from "./lib/server";
 
 export default async function globalSetup() {
   mkdirSync(TMP_DIR, { recursive: true });
@@ -11,10 +11,6 @@ export default async function globalSetup() {
   // intercepting clicks — which silently breaks click-based tests on CI runners
   // in that window (e.g. UTC night). Seed it off in the server-side store so
   // every page hydrates with it disabled.
-  // Also disable auto-titling: with the stub model it appends a session_info
-  // line and broadcasts a "reload" at an unpredictable moment, re-rendering
-  // #messages and racing tests that assert on freshly-created DOM (e.g.
-  // annotation highlights). Deterministic test env > background titling.
   const res = await fetch(`${baseURL}/api/settings`, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -25,7 +21,6 @@ export default async function globalSetup() {
     body: JSON.stringify({
       settings: {
         "pi-web:v1:cat:enabled": "false",
-        "pi-web:v1:auto-title:enabled": "false",
         "pi-web:v1:artifacts:include": "",
       },
     }),
@@ -38,6 +33,12 @@ export default async function globalSetup() {
   writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
   console.log(`[e2e] pi-web ready at ${baseURL} (pid ${child.pid})`);
 
-  // Detach so the spawned server outlives this setup process; teardown kills by pid.
-  child.unref();
+  return async () => {
+    try {
+      await stopServer(child);
+      rmSync(agentDir, { recursive: true, force: true });
+    } finally {
+      rmSync(STATE_FILE, { force: true });
+    }
+  };
 }

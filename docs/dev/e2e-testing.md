@@ -14,7 +14,7 @@ binaries and a running server, so it runs as its own target and CI job.
 make e2e-setup           # one-time: install deps + Playwright browsers
 make e2e                 # build the binary, then run the whole suite
 
-# or, from e2e/ directly (assumes ./pi-web is already built):
+# or, from e2e/ directly (run `make build e2e-stub` first):
 cd e2e
 npx playwright test                                  # all projects
 npx playwright test --project="Desktop Chrome"       # one project
@@ -99,16 +99,16 @@ Each intentional skip carries a reason string, visible with
 
 `global-setup.ts` (see `e2e/lib/server.ts`):
 
-1. Ensures `./pi-web` exists (CI builds it first; locally `make build` if missing).
+1. Ensures the platform binary exists (`pi-web.exe` on Windows, `pi-web` elsewhere; CI builds it first).
 2. Creates a temp `PI_CODING_AGENT_DIR` and copies `e2e/fixtures/sessions/` into it.
 3. Picks a free port and starts `pi-web -host 127.0.0.1` (the `-host` flag skips
    Tailscale auto-serve; auth is disabled).
-4. Prepends `e2e/lib/stub-pi/` to `PATH` so chat spawns the stub, never real pi.
+4. Prepends the RPC fixture to `PATH` using the platform separator. On Windows, `make e2e-stub` builds an executable launcher in `e2e/.tmp/stub-pi/` for the shared Node fixture.
 5. Writes `{ baseURL, sessionsDir, agentDir, pid }` to `e2e/.tmp/server.json`.
 
 The base fixture in `e2e/lib/test.ts` reads that file to set each test's
-`baseURL` and to expose `sessionsDir` to mutating specs. `global-teardown.ts`
-kills the server and removes the temp dir.
+`baseURL` and to expose `sessionsDir` to mutating specs. the setup teardown callback
+awaits the owned server and its pipes closing before removing the temp dir.
 
 ## Fixtures (sanitized real sessions)
 

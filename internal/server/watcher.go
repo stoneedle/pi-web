@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -79,13 +78,6 @@ func (s *Server) recordModTime(sessID string, mod time.Time) {
 	if known && mod.After(lastMod) {
 		s.broadcast(sessID, "reload")
 		s.broadcast(globalSessID, "reload")
-		// Only the regular server runs auto-title side effects. Development mode
-		// still broadcasts reloads from the shared session files.
-		if !s.disableBackgroundJobs {
-			s.startTask(func(ctx context.Context) {
-				s.maybeAutoTitleContext(ctx, sessID)
-			})
-		}
 	}
 	// Always recompute status for this session — the running state depends
 	// on the live mtime regardless of whether reload was emitted (e.g. the

@@ -2,9 +2,8 @@
 
 <div align="center">
 
-[![GitHub stars](https://img.shields.io/github/stars/ygncode/pi-web?style=flat&logo=github&label=stars&cacheSeconds=86400)](https://github.com/ygncode/pi-web/stargazers)
-[![npm downloads](https://img.shields.io/npm/dw/@ygncode/pi-web?label=downloads/wk&color=2ea043&cacheSeconds=86400)](https://www.npmjs.com/package/@ygncode/pi-web)
-[![license MIT](https://img.shields.io/npm/l/@ygncode/pi-web?label=license&color=0a7bbb&cacheSeconds=86400)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/stoneedle/pi-web?style=flat&logo=github&label=stars&cacheSeconds=86400)](https://github.com/stoneedle/pi-web/stargazers)
+[![license MIT](https://img.shields.io/github/license/stoneedle/pi-web?label=license&color=0a7bbb&cacheSeconds=86400)](LICENSE)
 [![Telegram](https://img.shields.io/badge/Telegram-Join-26A5E4?logo=telegram&logoColor=white)](https://t.me/+NJvFOTTa0wNjNTc9)
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-555)
 
@@ -63,20 +62,20 @@ Make it yours: switch themes and fonts, and use it in your own language — pi-w
 ## Install
 
 ```bash
-pi install npm:@ygncode/pi-web@beta
+pi install git:github.com/stoneedle/pi-web
 ```
 
-That's it — it downloads the matching binary, sets up auto‑start, and registers the `/web`, `/pi-web`, `/remote`, and `/refresh` commands.
+This source fork requires Go, Node.js, GNU Make and Git. Installation builds its own frontend and Go binary, installs to the user agent directory, and registers `/web`, `/pi-web`, `/remote`, and `/refresh`. On Windows, Git Bash supplies the build shell. Set `MAKE` to your GNU Make executable when it is outside `PATH`.
 
 Once installed, open `http://127.0.0.1:31415` in your browser. From pi, use `/web` to open the current session in your browser instantly. If Tailscale is running on your machine, pi-web automatically publishes an HTTPS endpoint on your tailnet — use `/remote` from pi to get a QR code and URL for any device on your tailnet.
 
 > **macOS remote access:** Install and open Tailscale interactively, approve the administrator prompt, and sign in. Then run `/pi-web restart`, followed by `/remote`.
 
-For manual installs, binary downloads, or building from source, see [user-docs/install.md](user-docs/en/install.md).
+For local-checkout installation and startup details, see [user-docs/install.md](user-docs/en/install.md).
 
 ## Pi Integration
 
-After `pi install npm:@ygncode/pi-web@beta`, you get:
+After `pi install git:github.com/stoneedle/pi-web`, you get:
 
 | Command | What it does |
 |---------|--------------|
@@ -85,16 +84,13 @@ After `pi install npm:@ygncode/pi-web@beta`, you get:
 | `/remote` | Show a QR code and URL for remote access over Tailscale |
 | `/refresh` | Pull new messages written from remote browsers back into the terminal session |
 
-Session **auto-titling** is built into pi-web itself and configured on the `/settings` page. It's **on by default** and names sessions automatically. You can choose:
-
-- **When to title** — once per session, or on every new message (the default).
-- **Title model** — a free, instant **built-in word heuristic (no AI)** by default, or pick a model (e.g. a small/fast one) for smarter, model-written titles.
+Install [stoneedle/pi-title-glyphs](https://github.com/stoneedle/pi-title-glyphs) for stable first-input names and optional background GPT-6 Luna summaries. That plugin owns naming in terminal and RPC sessions. pi-web displays the native saved name and provides manual renaming; active renames go to the Pi instance holding the session. Manual names persist and defeat late automatic results.
 
 The package also installs the pi-web binary to `~/.pi/agent/bin/pi-web` and sets up auto-start on login.
 
 ## Auto-Start on Login
 
-The `pi install npm:@ygncode/pi-web@beta` command sets this up automatically:
+The `pi install git:github.com/stoneedle/pi-web` command sets this up automatically:
 
 | OS | Mechanism |
 |----|-----------|

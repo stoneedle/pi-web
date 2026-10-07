@@ -1,6 +1,10 @@
-.PHONY: build setup frontend-setup go-setup root-setup frontend-build frontend-test frontend-knip frontend-lint frontend-format-check extension-test memory-test pi-web-ctl-test go-test install-test vet test check clean dev docs docs-dev release-patch release-minor release-major release-beta e2e e2e-setup
+.PHONY: title-e2e e2e-stub build setup frontend-setup go-setup root-setup frontend-build frontend-test frontend-knip frontend-lint frontend-format-check extension-test memory-test pi-web-ctl-test go-test install-test vet test check clean dev docs docs-dev release-patch release-minor release-major release-beta e2e e2e-setup
 
+ifeq ($(OS),Windows_NT)
+BINARY ?= pi-web.exe
+else
 BINARY ?= pi-web
+endif
 WEB_DIR := web
 E2E_DIR := e2e
 NODE_MODULES := $(WEB_DIR)/node_modules
@@ -89,12 +93,22 @@ version:
 e2e-setup:
 	cd $(E2E_DIR) && npm ci && npx playwright install --with-deps chromium firefox webkit
 
-e2e: build
+e2e-stub:
+ifeq ($(OS),Windows_NT)
+	mkdir -p $(E2E_DIR)/.tmp/stub-pi
+	go build -o $(E2E_DIR)/.tmp/stub-pi/pi.exe ./e2e/lib/stub-pi
+endif
+
+e2e: build e2e-stub
 	cd $(E2E_DIR) && npx playwright test
 
 clean:
 	rm -f $(BINARY)
 	rm -rf $(WEB_DIR)/dist
+
+# Shared naming integration; PI_TITLE_GLYPHS_ROOT identifies the title fork checkout.
+title-e2e: build
+	go test -tags=title_e2e ./internal/server -run TestTitleOwnerRenameLateSummaryAndReopen -v
 
 # Docs site (VitePress). Assemble the generated srcDir from user-docs + authored
 # pages, then build/preview. Not part of `make check` — never gates the app.

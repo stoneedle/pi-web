@@ -1,24 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# pi-web installer — downloads the binary and sets up auto-start
-#
-# Standalone (no pi required):
-#   curl -fsSL https://raw.githubusercontent.com/ygncode/pi-web/main/install.sh | bash
-#
-# Via pi package (also registers /remote, /refresh commands):
-#   pi install npm:@ygncode/pi-web@beta
-#
-# Updates are handled by re-running the same command.
+# pi-web source-fork installer — installs the local build and auto-start.
+# From the checkout: node scripts/run-lifecycle.mjs install
+# Via Pi: pi install git:github.com/stoneedle/pi-web
+# Updates use the same Git source and build the matching binary.
 
-REPO="ygncode/pi-web"
 if [[ -n "${PI_WEB_INSTALL_DIR:-}" ]]; then
   INSTALL_DIR="$PI_WEB_INSTALL_DIR"
-elif [[ -n "${npm_package_name:-}" ]]; then
-  # pi installs npm packages non-interactively; avoid requiring sudo during npm postinstall.
-  INSTALL_DIR="${HOME}/.pi/agent/bin"
 else
-  INSTALL_DIR="/usr/local/bin"
+  INSTALL_DIR="${HOME}/.pi/agent/bin"
 fi
 BINARY="$INSTALL_DIR/pi-web"
 SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -58,48 +49,6 @@ detect_platform() {
   echo "${os}-${arch}"
 }
 
-# ── Choose release tag ──────────────────────────────────────────────
-package_tag() {
-  # When install.sh runs as an npm lifecycle script, install the binary that
-  # matches the npm package version. This keeps pinned installs such as
-  # `pi install npm:@ygncode/pi-web@0.0.1-beta.25` pinned for both the extension
-  # package and the downloaded pi-web binary.
-  if [[ "${npm_package_name:-}" == "@ygncode/pi-web" && -n "${npm_package_version:-}" ]]; then
-    echo "v${npm_package_version#v}"
-  fi
-}
-
-# ── Check latest release tag ────────────────────────────────────────
-latest_tag() {
-  local latest_url="https://api.github.com/repos/${REPO}/releases/latest"
-  local releases_url="https://api.github.com/repos/${REPO}/releases?per_page=100"
-  local tag=""
-
-  if command -v curl &>/dev/null; then
-    tag="$(curl -fsS "$latest_url" 2>/dev/null | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' || true)"
-    if [[ -z "$tag" ]]; then
-      # /latest ignores prereleases. Fall back to the highest semver release of any type.
-      tag="$(curl -fsS "$releases_url" 2>/dev/null | grep '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' | sort -V | tail -1 || true)"
-    fi
-  elif command -v wget &>/dev/null; then
-    tag="$(wget -qO- "$latest_url" 2>/dev/null | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' || true)"
-    if [[ -z "$tag" ]]; then
-      # /latest ignores prereleases. Fall back to the highest semver release of any type.
-      tag="$(wget -qO- "$releases_url" 2>/dev/null | grep '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' | sort -V | tail -1 || true)"
-    fi
-  else
-    err "Neither curl nor wget found."
-    exit 1
-  fi
-
-  if [[ -z "$tag" ]]; then
-    err "Could not determine latest release tag from ${REPO}."
-    exit 1
-  fi
-
-  echo "$tag"
-}
-
 # ── Get installed version ───────────────────────────────────────────
 installed_version() {
   if [[ -x "$BINARY" ]]; then
@@ -131,32 +80,6 @@ needs_update() {
   fi
 
   return 0  # needs update
-}
-
-# ── Download binary ─────────────────────────────────────────────────
-download_binary() {
-  local platform="$1"
-  local tag="$2"
-  local asset="pi-web-${platform}"
-  local url="https://github.com/${REPO}/releases/download/${tag}/${asset}"
-
-  info "Downloading pi-web ${tag} (${platform})..."
-  info "  ${url}"
-
-  local tmp
-  tmp="$(mktemp -d)"
-
-  if command -v curl &>/dev/null; then
-    curl -fsSL --progress-bar -o "${tmp}/pi-web" "$url"
-  elif command -v wget &>/dev/null; then
-    wget -q --show-progress -O "${tmp}/pi-web" "$url"
-  else
-    err "Neither curl nor wget found. Install one and try again."
-    exit 1
-  fi
-
-  chmod +x "${tmp}/pi-web"
-  echo "${tmp}/pi-web"
 }
 
 # ── Install binary ──────────────────────────────────────────────────
@@ -237,18 +160,6 @@ install_ctl() {
 }
 
 # ── Fetch config file from repo (for standalone installs) ──────────
-fetch_config() {
-  local file="$1"
-  local dest="$2"
-  local url="https://raw.githubusercontent.com/${REPO}/main/${file}"
-
-  if command -v curl &>/dev/null; then
-    curl -fsSL -o "$dest" "$url"
-  else
-    wget -q -O "$dest" "$url"
-  fi
-}
-
 # ── macOS auto-start ─────────────────────────────────────────────────
 setup_macos() {
   local plist_dst="${HOME}/Library/LaunchAgents/com.pi-web.plist"
@@ -263,12 +174,8 @@ setup_macos() {
   if [[ -f "$plist_src" ]]; then
     sed "s|/usr/local/bin/pi-web|${BINARY}|g" "$plist_src" > "$generated"
   else
-    info "Fetching launchd config from repo..."
-    local raw
-    raw="$(mktemp)"
-    fetch_config "init/com.pi-web.plist" "$raw"
-    sed "s|/usr/local/bin/pi-web|${BINARY}|g" "$raw" > "$generated"
-    rm -f "$raw"
+    err "Source checkout is missing init/com.pi-web.plist."
+    exit 1
   fi
 
   info "pi-web will listen on localhost; if Tailscale is running, it will publish HTTPS with Tailscale Serve."
@@ -328,9 +235,8 @@ setup_linux() {
   # Get service file from local clone or fetch from repo
   local service_src="${SRC_DIR}/init/pi-web.service"
   if [[ ! -f "$service_src" ]]; then
-    info "Fetching systemd service file from repo..."
-    service_src="$(mktemp)"
-    fetch_config "init/pi-web.service" "$service_src"
+    err "Source checkout is missing init/pi-web.service."
+    exit 1
   fi
 
   local generated_service
@@ -421,12 +327,12 @@ main() {
   platform="$(detect_platform)"
 
   local tag
-  tag="$(package_tag)"
-  if [[ -n "$tag" ]]; then
-    info "Using pi-web package version ${tag}."
-  else
-    tag="$(latest_tag)"
+  local source_binary="${PI_WEB_SOURCE_BINARY:-${SRC_DIR}/pi-web}"
+  if [[ ! -x "$source_binary" ]]; then
+    err "Build the fork first with make build, or run node scripts/run-lifecycle.mjs install."
+    exit 1
   fi
+  tag="${PI_WEB_SOURCE_VERSION:-$("$source_binary" -version)}"
 
   if ! needs_update "$tag"; then
     install_ctl
@@ -435,8 +341,7 @@ main() {
     exit 0
   fi
 
-  local tmp_binary
-  tmp_binary="$(download_binary "$platform" "$tag")"
+
 
   # Check if running interactively
   local is_update=false
@@ -444,7 +349,7 @@ main() {
     is_update=true  # non-interactive → update mode (no prompts)
   fi
 
-  if ! install_binary "$tmp_binary" "$tag" "$is_update"; then
+  if ! install_binary "$source_binary" "$tag" "$is_update"; then
     # User chose not to overwrite
     exit 0
   fi
