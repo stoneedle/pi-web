@@ -18,9 +18,9 @@ build: setup frontend-build
 setup: frontend-setup go-setup
 
 frontend-setup:
-	@if [ ! -d "$(NODE_MODULES)" ] || [ "$(WEB_DIR)/package-lock.json" -nt "$(NODE_MODULES)" ]; then \
+	@if [ ! -d "$(NODE_MODULES)/vite" ] || [ "$(WEB_DIR)/package-lock.json" -nt "$(NODE_MODULES)" ]; then \
 		echo "Installing frontend dependencies..."; \
-		cd $(WEB_DIR) && npm install; \
+		cd $(WEB_DIR) && npm install --include=dev; \
 	else \
 		echo "Frontend dependencies already installed."; \
 	fi
