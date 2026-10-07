@@ -146,7 +146,11 @@ Steers share the active run's settlement. Aborting cancels the pending reply
 before settlement, so no delayed file writes or stream events outlive the run.
 
 The browser surfaces the reply through the same fsnotify → SSE reload path as a
-real session. To extend chat coverage, add command handling in the stub mirroring
+real session. `ask-question.spec.ts` navigates through multiple sessions without
+reloading the document, answers single-choice and multiple-choice cards, and
+checks that only the current session receives one answer while earlier sessions
+retain their original entries. To extend chat coverage, add command handling in
+the stub mirroring
 the real protocol in `internal/rpc/client.go`.
 
 Note: chat is disabled ("View only") when a session's `cwd` doesn't exist on

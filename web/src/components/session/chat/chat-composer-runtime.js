@@ -65,6 +65,7 @@ export function runChatComposer({
   const URLSearchParams = URLSearchParamsImpl;
   const CustomEvent = CustomEventImpl;
   const setInterval = setIntervalImpl;
+  let disposeQuestionHandlers = null;
   let onWorkerModelUpdate = null;
   let currentModelForThinking = null;
   let positionPopover = () => {};
@@ -202,10 +203,11 @@ export function runChatComposer({
       CustomEventImpl: CustomEvent,
     });
 
-    setupAskQuestionHandlers({
+    const questionHandlers = setupAskQuestionHandlers({
       documentImpl: document,
       sendChatMessage: submission.sendChatMessage,
     });
+    disposeQuestionHandlers = questionHandlers.dispose;
 
     setupSteerQueue({
       windowImpl: window,
@@ -275,4 +277,9 @@ export function runChatComposer({
   }
 
   navigateInitialChatLeaf({ entries, leafId, urlTargetId, byId, navigateTo });
+
+  return () => {
+    document.removeEventListener('DOMContentLoaded', initPiChatControls);
+    disposeQuestionHandlers?.();
+  };
 }

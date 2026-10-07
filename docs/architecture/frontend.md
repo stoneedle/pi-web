@@ -60,6 +60,8 @@ The message pane is rendered by Svelte components (no string-building renderer):
 - `artifacts/`, `annotations/` — pure registries/filters/ranges + the fetch API wrappers; the panels themselves are `ArtifactPanel.svelte`/`AnnotationLayer.svelte`
 - `cat-gatekeeper/` — pure timer/storage logic behind `CatGatekeeper.svelte`
 
+Question-card clicks are delegated to the mounted chat composer. `runChatComposer` returns a teardown callback that `<ChatComposer>` calls on unmount, so SPA navigation removes the previous session's question handler before the next composer can send an answer.
+
 The index + settings Phase 4 migration is complete: those routes are Svelte-orchestrated too, with only pure/API helpers left outside components.
 
 ## Static / Share Export
