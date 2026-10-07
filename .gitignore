@@ -1,5 +1,6 @@
 pi-sessions-viewer
 *.exe
+*.exe~
 .DS_Store
 .superpowers/
 .worktrees/
